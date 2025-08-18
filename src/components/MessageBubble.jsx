@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 
 const MessageBubble = ({ message, onRetry }) => {
   const [copiedCode, setCopiedCode] = useState(null);
+  const IMG_EXT = /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?(#.*)?$/i;
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
 
@@ -31,31 +32,111 @@ const MessageBubble = ({ message, onRetry }) => {
       });
     }
   };
-
   const renderContent = (text) => {
-    // Handle image URLs
-    if (text.includes('Image: ')) {
-      const parts = text.split('\n');
-      return parts.map((part, index) => {
-        if (part.startsWith('Image: ')) {
-          const imageUrl = part.replace('Image: ', '');
-          return (
-            <div key={index}>
-              <img 
-                src={imageUrl} 
-                alt="AI generated content" 
-                className="image-preview"
-                loading="lazy"
-              />
-            </div>
-          );
-        }
-        return <div key={index}>{renderTextContent(part)}</div>;
-      });
-    }
+  // 1) Existing "Image: <url>" lines → render as images
+  if (text.includes('Image: ')) {
+    const parts = text.split('\n');
+    return parts.map((part, index) => {
+      if (part.startsWith('Image: ')) {
+        const imageUrl = part.replace('Image: ', '').trim();
+        return (
+          <div key={index} className="mt-2">
+            <img
+              src={imageUrl}
+              alt="AI generated content"
+              className="image-preview rounded-lg"
+              loading="lazy"
+              style={{ maxWidth: '100%', height: 'auto' }}
+              onError={(e) => { e.currentTarget.replaceWith(createLinkFallback(imageUrl)); }}
+            />
+          </div>
+        );
+      }
+      return <div key={index}>{renderTextContent(part)}</div>;
+    });
+  }
 
-    return renderTextContent(text);
+  // 2) NEW: detect direct image URLs in any reply and render a gallery
+  const imgUrls = extractImageUrls(text);
+  if (imgUrls.length) {
+    const cleaned = stripUrlsFromText(text, imgUrls);
+    return (
+      <>
+        {cleaned && <div>{renderTextContent(cleaned)}</div>}
+        {renderImageGallery(imgUrls)}
+      </>
+    );
+  }
+
+  // 3) Fallback: normal rich text (links stay as anchors)
+  return renderTextContent(text);
+};
+
+
+  function isImageUrl(url) {
+    try {
+      const u = new URL(url);
+      return IMG_EXT.test(u.pathname);
+    } catch {
+      return false;
+    }
   };
+
+  function extractUrls(text) {
+    const urlRegex = /(https?:\/\/[^\s)]+)(?=\s|$|[\)\]]|<)/g;
+    const urls = [];
+    let m;
+    while ((m = urlRegex.exec(text)) !== null) {
+      urls.push(m[1]);
+    }
+    return Array.from(new Set(urls));
+  }
+
+  function extractImageUrls(text) {
+    return extractUrls(text).filter(isImageUrl);
+  }
+
+  function stripUrlsFromText(text, urls) {
+    let out = text;
+    for (const u of urls) {
+      // remove as standalone or bullet link lines
+      out = out.replace(new RegExp(`\\s*-?\\s*${u.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\s*`, 'g'), ' ');
+    }
+    return out.trim();
+  }
+
+  function renderImageGallery(urls) {
+  return (
+    <div className="mt-2 grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
+      {urls.slice(0, 8).map((src, i) => (
+        <a key={src + i} href={src} target="_blank" rel="noopener noreferrer" title={src}>
+          <img
+            src={src}
+            alt="image result"
+            loading="lazy"
+            className="rounded-lg"
+            style={{ width: '100%', height: 140, objectFit: 'cover', background: 'var(--bg-secondary)' }}
+            onError={(e) => { e.currentTarget.closest('a')?.replaceWith(createLinkFallback(src)); }}
+          />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// Fallback: replace broken <img> with a clickable link
+  function createLinkFallback(src) {
+      const a = document.createElement('a');
+      a.href = src;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = src;
+      a.style.color = 'var(--input-focus)';
+      a.style.textDecoration = 'underline';
+      return a;
+  }
+
+
 
   const renderTextContent = (text) => {
     // Handle code blocks
