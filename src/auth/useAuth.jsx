@@ -7,9 +7,6 @@ import {
 
 const AuthContext = createContext(null);
 
-// This is a demo-only authentication hook using localStorage.
-// For production, this should be replaced with a proper server-based authentication system.
-
 const arrayBufferToHex = (buffer) => {
   return Array.from(new Uint8Array(buffer))
     .map(b => b.toString(16).padStart(2, '0'))
@@ -26,18 +23,25 @@ const hashPassword = async (password) => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [theme, setTheme] = useState(getTheme());
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const session = getSession();
-    if (session) {
-      const users = getUsers();
-      const sessionUser = users.find(u => u.username === session.username);
-      if (sessionUser) {
-        setUser({ username: sessionUser.username, email: sessionUser.email });
-      } else {
-        // Session exists for a user that was deleted, clear it.
-        clearSession();
+    try {
+      const session = getSession();
+      if (session && session.username) {
+        const users = getUsers();
+        const sessionUser = users.find(u => u.username === session.username);
+        if (sessionUser) {
+          setUser({ username: sessionUser.username, email: sessionUser.email });
+        } else {
+          clearSession();
+        }
       }
+    } catch(e) {
+      console.error("Failed to initialize auth state", e);
+      clearSession();
+    } finally {
+      setIsAuthLoading(false);
     }
   }, []);
   
@@ -50,28 +54,27 @@ export const AuthProvider = ({ children }) => {
     setTheme(currentTheme => currentTheme === 'light' ? 'dark' : 'light');
   };
 
-  const signup = async ({ username, email, password, remember }) => {
-    const users = getUsers();
-    
-    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-      throw new Error('Username already exists.');
-    }
-    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-      throw new Error('Email is already in use.');
-    }
+  const signup = async ({ username, email, password /* remember unused here */ }) => {
+     const users = getUsers();
+     
+     if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+       throw new Error('Username already exists.');
+     }
+     if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+       throw new Error('Email is already in use.');
+     }
 
-    const passHash = await hashPassword(password);
-    const newUser = {
-      username,
-      email,
-      passHash,
-      createdAt: new Date().toISOString()
-    };
-    
-    saveUsers([...users, newUser]);
-
-    // Automatically log in after signup
-    return login({ login: username, password, remember });
+     const passHash = await hashPassword(password);
+     const newUser = {
+       username,
+       email,
+       passHash,
+       createdAt: new Date().toISOString()
+     };
+     
+     saveUsers([...users, newUser]);
+    // ✔️ Do NOT login here. Return a simple success indicator.
+    return { ok: true };
   };
 
   const login = async ({ login: loginIdentifier, password, remember }) => {
@@ -96,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const value = { user, signup, login, logout, theme, toggleTheme };
+  const value = { user, signup, login, logout, theme, toggleTheme, isAuthLoading };
 
   return (
     <AuthContext.Provider value={value}>

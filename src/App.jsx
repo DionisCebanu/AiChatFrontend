@@ -1,34 +1,44 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Routes, Route } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Toaster } from '@/components/ui/toaster';
-import ProtectedView from '@/auth/ProtectedView';
+import { AuthProvider } from '@/auth/useAuth.jsx';
+import HomePage from '@/pages/Home.jsx';
+import ChatPage from '@/pages/ChatPage.jsx';
 import AuthPage from '@/auth/AuthPage';
-import ChatView from '@/components/ChatView';
-import { AuthProvider } from '@/auth/useAuth';
+import ProtectedRoute from '@/auth/ProtectedRoute.jsx';
 import '@/styles.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Helmet>
-        <title>Mini AI Chat</title>
-        <meta name="description" content="Modern AI chat interface with intelligent responses and beautiful design" />
-        <meta property="og:title" content="Mini AI Chat" />
-        <meta property="og:description" content="Modern AI chat interface with intelligent responses and beautiful design" />
-      </Helmet>
-      
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
         className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}
       >
-        <ProtectedView fallback={<AuthPage />}>
-          <ChatView />
-        </ProtectedView>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route 
+            path="/chat" 
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            } 
+          />
+           <Route 
+            path="/chat/:chatId" 
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
       </motion.div>
-        
       <Toaster />
     </AuthProvider>
   );

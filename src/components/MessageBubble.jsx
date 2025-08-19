@@ -212,9 +212,7 @@ const MessageBubble = ({ message, onRetry }) => {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.2 }}
-        className={`max-w-[80%] md:max-w-[70%] ${
-          isError ? 'error-message' : isUser ? 'user-message' : 'bot-message'
-        } rounded-2xl px-4 py-3 shadow-sm`}
+        className={`min-w-0 max-w-[80%] md:max-w-[70%] ${isError ? 'error-message' : isUser ? 'user-message' : 'bot-message'} rounded-2xl px-4 py-3 shadow-sm`}
       >
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
@@ -237,7 +235,7 @@ const MessageBubble = ({ message, onRetry }) => {
               </span>
             </div>
             
-            <div className="text-sm leading-relaxed">
+            <div className="text-sm leading-relaxed message-text break-words [overflow-wrap:anywhere] max-w-full">
               {isError ? (
                 <div className="space-y-2">
                   <div>{message.text}</div>
