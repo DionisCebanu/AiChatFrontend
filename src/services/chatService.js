@@ -33,13 +33,13 @@ export async function sendMessage(input) {
   const sid = payload.sessionId || getApiSessionId();
 
     // one-time env log
-  if (!LOGGED_API_ONCE) {
+  /* if (!LOGGED_API_ONCE) {
     console.info(
       "[chatService] API_URL =", API_URL,
       "| VITE_API_URL =", import.meta?.env?.VITE_API_URL ?? "(unset)"
     );
     LOGGED_API_ONCE = true;
-  }
+  } */
 
   // 20s timeout
   const controller = new AbortController();
