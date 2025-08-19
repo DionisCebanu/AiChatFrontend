@@ -1,15 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef , useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
 import ChatSidebar from '@/components/ChatSidebar';
 import ChatView from '@/components/ChatView';
 import { useChatManager } from '@/hooks/useChatManager';
+import { Menu } from 'lucide-react';
+import {Button} from '@/components/ui/button';
 
 const ChatPage = () => {
   const { user, theme, toggleTheme, logout } = useAuth();
   const { chatId } = useParams();
   const navigate = useNavigate();
-  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const {
     chats,
     currentChat,
@@ -78,6 +80,12 @@ const ChatPage = () => {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      {/* Hamburger (mobile only) */}
+      <div className="md:hidden absolute top-5 left-5 z-10 bg-[rgba(163,163,163,0.4)] rounded-3xl">
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
+            <Menu className="h-6 w-6" />
+          </Button>
+      </div>
       <ChatSidebar 
         chats={chats}
         currentChatId={currentChat?.id}
@@ -89,6 +97,9 @@ const ChatPage = () => {
         logout={logout}
         theme={theme}
         toggleTheme={toggleTheme}
+        mobileOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        side="left"
       />
       <div className="flex-1 min-w-0 flex flex-col">
         {currentChat ? (
