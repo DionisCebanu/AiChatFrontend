@@ -141,8 +141,12 @@ const AuthPage = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger 
+                value="login" 
+                className={activeTab === 'login' ? '!bg-blue-500 !text-white' : ''}
+                >Login
+            </TabsTrigger>
+            <TabsTrigger value="signup" className={activeTab === 'signup' ? '!bg-blue-500 !text-white' : ''}>Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
             <motion.div
@@ -175,7 +179,7 @@ const AuthPage = () => {
                   </div>
                 </div>
                 {errors.form && <p className="text-red-500 text-sm text-center">{errors.form}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Login
                 </Button>
@@ -219,7 +223,7 @@ const AuthPage = () => {
                    {renderError('confirmPassword')}
                 </div>
                 {errors.form && <p className="text-red-500 text-sm text-center">{errors.form}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create Account
                 </Button>
@@ -227,7 +231,6 @@ const AuthPage = () => {
             </motion.div>
           </TabsContent>
         </Tabs>
-        <AuthNotice />
       </motion.div>
     </div>
   );
