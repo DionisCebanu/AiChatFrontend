@@ -155,7 +155,7 @@ const AuthPage = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
-              className="p-6 rounded-lg shadow-lg"
+              className="p-6 shadow-lg rounded-[10px]"
               style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)'}}
             >
               <form onSubmit={handleLogin} className="space-y-4">
