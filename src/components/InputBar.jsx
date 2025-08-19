@@ -57,7 +57,7 @@ const InputBar = forwardRef(({ value, onChange, onSend, isLoading, isEmpty }, re
       className="p-4 border-t border-color"
       style={{ backgroundColor: 'var(--bg-secondary)' }}
     >
-      <div className="flex items-end space-x-3">
+      <div className="flex space-x-3 items-center">
         <div className="flex-1">
           <label htmlFor="message-input" className="sr-only">
             Type your message
@@ -80,14 +80,7 @@ const InputBar = forwardRef(({ value, onChange, onSend, isLoading, isEmpty }, re
               disabled={isLoading}
             />
           </div>
-          <div className="flex justify-between items-center mt-2 px-1">
-            <span className="text-xs text-muted">
-              Enter to send • Shift+Enter for new line
-            </span>
-            <span className="text-xs text-muted">
-              {value.length}/2000
-            </span>
-          </div>
+          
         </div>
         
         <motion.button
@@ -108,6 +101,14 @@ const InputBar = forwardRef(({ value, onChange, onSend, isLoading, isEmpty }, re
             <Send className="w-5 h-5" />
           )}
         </motion.button>
+      </div>
+      <div className="flex justify-between items-center mt-2 px-1">
+          <span className="text-xs text-muted">
+            Enter to send • Shift+Enter for new line
+          </span>
+          <span className="text-xs text-muted">
+            {value.length}/2000
+          </span>
       </div>
     </motion.div>
   );
