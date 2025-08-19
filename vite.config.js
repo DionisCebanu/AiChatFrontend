@@ -207,7 +207,7 @@ export default defineConfig({
     // --- ADD THIS ---
     proxy: {
       "/chat": {
-        target: "http://127.0.0.1:8082",
+        target: "https://ai-chat-hbt3.onrender.com/",
         changeOrigin: true,
         secure: false,
       },

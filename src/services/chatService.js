@@ -1,5 +1,13 @@
 // src/services/chatService.js
-export const API_URL = import.meta?.env?.VITE_API_URL || "/chat";
+const PROD_DEFAULT_API = "https://ai-chat-hbt3.onrender.com/chat";
+const isLocalhost =
+  typeof window !== "undefined" &&
+  ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+export const API_URL =
+  (import.meta?.env?.VITE_API_URL && String(import.meta.env.VITE_API_URL)) ||
+  (isLocalhost ? "/chat" : PROD_DEFAULT_API);
+let LOGGED_API_ONCE = false;
 
 const LS_API_SESSION = "api_session_id";
 
@@ -23,6 +31,15 @@ export async function sendMessage(input) {
   if (!message) throw new Error("Message is empty.");
 
   const sid = payload.sessionId || getApiSessionId();
+
+    // one-time env log
+  if (!LOGGED_API_ONCE) {
+    console.info(
+      "[chatService] API_URL =", API_URL,
+      "| VITE_API_URL =", import.meta?.env?.VITE_API_URL ?? "(unset)"
+    );
+    LOGGED_API_ONCE = true;
+  }
 
   // 20s timeout
   const controller = new AbortController();
